@@ -4,8 +4,10 @@ const ResponseObj = require("../utils/ResponseObj");
 // Create product
 const createProduct = async (req, res) => {
     try {
-        const product = await Product.create(req.body);
-        res.status(201).json(ResponseObj(true, "Product created", product));
+        const product = await Product.create({
+            ...req.body,
+            createdBy: req.user._id 
+        });        res.status(201).json(ResponseObj(true, "Product created", product));
     } catch (err) {
         res.status(500).json(ResponseObj(false, "Server error", null, err.message));
     }
@@ -50,6 +52,37 @@ const getProduct = async (req, res) => {
     }
 };
 
+// GET /api/products/store/:userId
+const getProductsByStore = async (req, res) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+
+        const query = {
+            createdBy: req.params.userId,
+            isActive: true
+        };
+
+        const total = await Product.countDocuments(query);
+        const products = await Product.find(query)
+            .skip((page - 1) * limit)
+            .limit(Number(limit))
+            .sort({ createdAt: -1 });
+
+        if (products.length === 0) {
+            return res.status(404).json(ResponseObj(false, "No products found for this store", null, "Not found"));
+        }
+
+        res.status(200).json(ResponseObj(true, "Store products fetched", {
+            products,
+            total,
+            page: Number(page),
+            pages: Math.ceil(total / limit)
+        }));
+    } catch (err) {
+        res.status(500).json(ResponseObj(false, "Server error", null, err.message));
+    }
+};
+
 // Update product
 const updateProduct = async (req, res) => {
     try {
@@ -76,4 +109,4 @@ const deleteProduct = async (req, res) => {
     }
 };
 
-module.exports = { createProduct, getProducts, getProduct, updateProduct, deleteProduct };
+module.exports = { createProduct, getProducts, getProduct, getProductsByStore, updateProduct, deleteProduct };
