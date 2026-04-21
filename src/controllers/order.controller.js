@@ -2,7 +2,7 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const ResponseObj = require("../utils/ResponseObj");
 
-// POST /api/orders
+// POST /api/orders/place
 const placeOrder = async (req, res) => {
     try {
         const { items, shippingAddress, paymentMethod, note } = req.body;
