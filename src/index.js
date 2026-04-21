@@ -3,6 +3,10 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth.routes");
 const productRoutes = require("./routes/product.routes");
 const orderRoutes = require("./routes/order.routes");
+const userRoutes = require("./routes/user.routes"); 
+
+const { notFound, errorHandler } = require("./middlewares/error.middleware");
+
 const app = express();
 
 app.use(cors({
@@ -20,10 +24,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => {
     res.send("API is running...");
 });
+
+app.use(notFound);
+app.use(errorHandler);
 
 module.exports = app;
 
